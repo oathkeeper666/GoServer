@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tasks>
+	<task id="1" task_type="1" type="1" condition="1" time="1" reward="2,500,0;3,100,0" task_degree="10" name="首次登陆" desc="首次登陆"/>
+	<task id="2" task_type="1" type="2" condition="1000" time="1" reward="2,500,0;3,100,0" task_degree="10" name="乾坤一掷" desc="消耗1000金币"/>
+	<task id="3" task_type="1" type="3" condition="1" time="1" reward="2,500,0;3,100,0" task_degree="10" name="初试身手" desc="参与1次对战"/>
+	<task id="4" task_type="1" type="4" condition="1" time="1" reward="2,1000,0;3,150,0" task_degree="15" name="初露锋芒" desc="对战首胜"/>
+	<task id="5" task_type="1" type="5" condition="3" time="1" reward="2,500,0;3,150,0" task_degree="15" name="并肩" desc="组队获胜3次非人机游戏"/>
+	<task id="6" task_type="1" type="6" condition="1" time="1" reward="2,500,0;3,100,0" task_degree="15" name="全场最佳" desc="获得1次对战MVP"/>
+	<task id="8" task_type="1" type="8" condition="30" time="1" reward="2,2000,0;3,200,0" task_degree="30" name="万人敌" desc="对战累计完成30次击杀"/>
+	<task id="10" task_type="1" type="11" condition="2" time="1" reward="2,1000,0;3,150,0" task_degree="10" name="气势如虹" desc="对战2连胜"/>
+	<task id="11" task_type="1" type="5" condition="5" time="1" reward="2,1500,0;3,200,0" task_degree="20" name="众志成城" desc="组队获胜5次非人机游戏"/>
+	<task id="12" task_type="1" type="11" condition="3" time="1" reward="2,1000,0;3,150,0" task_degree="15" name="难逢敌手" desc="对战3连胜"/>
+	<task id="14" task_type="2" type="13" condition="45" time="1" reward="4,50,0;100,5,10000001" task_degree="0" name="" desc="45活跃度可领取"/>
+	<task id="15" task_type="2" type="13" condition="75" time="1" reward="4,100,0;100,10,10000001" task_degree="0" name="" desc="75活跃度可领取"/>
+	<task id="16" task_type="2" type="13" condition="105" time="1" reward="4,150,0;100,15,10000001" task_degree="0" name="" desc="105活跃度可领取"/>
+	<task id="17" task_type="2" type="13" condition="135" time="1" reward="4,200,0;100,20,10000001" task_degree="0" name="" desc="135活跃度可领取"/>
+	<task id="18" task_type="2" type="13" condition="150" time="1" reward="4,400,0;100,30,10000001" task_degree="0" name="" desc="150活跃度可领取"/>
+	<task id="19" task_type="2" type="13" condition="999" time="1" reward="4,600,0" task_degree="0" name="" desc="999活跃度可领取"/>
+</tasks>
+

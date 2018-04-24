@@ -30,9 +30,9 @@ func main() {
 	network.StartListen()
 	fmt.Println(common.LOGIN_RESPOND)
 
-	srvConf := config.FromJsonFile("../etc/server.json")
+	srvConf := config.FromXmlFile("../etc/tasks.xml")
 	if srvConf != nil {
-		fmt.Printf("server json is %v.\n", srvConf)
+		fmt.Printf("server xml is %v.\n", srvConf)
 	}
 
 	waitForSignal()
