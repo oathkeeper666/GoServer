@@ -7,8 +7,9 @@ import (
 	"os/signal"
 	"network"
 	"common"
-	"config"
-)
+	//"config"
+	"logger"
+) 
 
 func waitForSignal() {
 	signals := [] os.Signal {
@@ -21,18 +22,19 @@ func waitForSignal() {
 	fmt.Printf("process receive signal %v\n", s)
 }
 
-var str string = `{
-	"ServerId": "wb-game-server1",
-	"LogPath": "log/"
-}`
-
 func main() {
 	network.StartListen()
 	fmt.Println(common.LOGIN_RESPOND)
 
-	srvConf := config.FromXmlFile("../etc/tasks.xml")
+	/*srvConf := config.FromXmlFile("../etc/tasks.xml")
 	if srvConf != nil {
 		fmt.Printf("server xml is %v.\n", srvConf)
+	}*/
+
+	log := logger.GetLog("server")
+	if log != nil {
+		//fmt.Println("level = ", log.Level)
+		log.WriteLog(logger.INFO, "Number one is %d", 1)
 	}
 
 	waitForSignal()
