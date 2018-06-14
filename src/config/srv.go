@@ -12,6 +12,12 @@ type ServerConfig struct {
 	LogPath string `json: "LogPath"`
 }
 
+var SrvConf *ServerConfig
+
+func LoadServerConfig(filePath string) {
+	SrvConf = FromJsonFile(filePath).(*ServerConfig)
+}
+
 func FromJsonStr(jsonStr []byte) (interface {}) {
 	var conf ServerConfig
 	err := json.Unmarshal(jsonStr, &conf)

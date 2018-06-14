@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"network"
 	"common"
-	//"config"
+	"config"
 	"logger"
 ) 
 
@@ -25,15 +25,10 @@ func waitForSignal() {
 func main() {
 	network.StartListen()
 	fmt.Println(common.LOGIN_RESPOND)
-
-	/*srvConf := config.FromXmlFile("../etc/tasks.xml")
-	if srvConf != nil {
-		fmt.Printf("server xml is %v.\n", srvConf)
-	}*/
-
+	// load server config
+	config.LoadServerConfig("../etc/server.json")
 	log := logger.GetLog("server")
 	if log != nil {
-		//fmt.Println("level = ", log.Level)
 		log.WriteLog(logger.INFO, "Number one is %d", 1)
 	}
 
