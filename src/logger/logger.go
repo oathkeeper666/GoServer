@@ -18,7 +18,47 @@ var LevelStr [5]string = [5]string {
 	"DEBUG ", "INFO ", "WARNING ", "ERROR ", "FATAL ",
 }
 
-var logMap map[string]*Log = make(map[string]*Log)
+var g_logger *Log = newLog("gateway", DEBUG)
+
+func WRITE_DEBUG(format string, v ... interface {}) {
+	if g_logger == nil {
+		return
+	}
+	g_logger.setLevel(DEBUG)
+	g_logger.writeLog(format, v ...)
+}
+
+func WRITE_INFO(format string, v ... interface {}) {
+	if g_logger == nil {
+		return
+	}
+	g_logger.setLevel(INFO)
+	g_logger.writeLog(format, v ...)
+}
+
+func WRITE_WARNING(format string, v ... interface {}) {
+	if g_logger == nil {
+		return
+	}
+	g_logger.setLevel(WARNING)
+	g_logger.writeLog(format, v ...)
+}
+
+func WRITE_ERROR(format string, v ... interface {}) {
+	if g_logger == nil {
+		return
+	}
+	g_logger.setLevel(ERROR)
+	g_logger.writeLog(format, v ...)
+}
+
+func WRITE_FATAL(format string, v ... interface {}) {
+	if g_logger == nil {
+		return
+	}
+	g_logger.setLevel(FATAL)
+	g_logger.writeLog(format, v ...)
+}
 
 type Log struct {
 	Level uint8
@@ -27,8 +67,8 @@ type Log struct {
 	file *os.File
 }
 
-func NewLog(name string, level uint8) (*Log) {
-	file, err := os.OpenFile(string("../log/" + name + ".log"), os.O_APPEND | os.O_CREATE, os.ModeAppend)
+func newLog(name string, level uint8) (*Log) {
+	file, err := os.OpenFile(string("../log/" + name + ".log"), os.O_WRONLY | os.O_APPEND | os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Printf("open %s failed.\n", name)
 		return nil
@@ -46,34 +86,14 @@ func NewLog(name string, level uint8) (*Log) {
 	}
 }
 
-func (this *Log) SetLevel(lv uint8) {
+func (this *Log) setLevel(lv uint8) {
 	if lv < DEBUG || lv > FATAL {
 		return
 	}
 	this.Level = lv
 }
 
-func (this *Log) WriteLog(level uint8, format string, v ... interface {}) {
-	if level < DEBUG || level > FATAL {
-		return
-	}
-	this.logger.SetPrefix(LevelStr[level])
-	this.logger.Printf(format + "\r\n", v)
-}
-
-func GetLog(name string) (*Log) {
-	if logMap[name] != nil {
-		return logMap[name]
-	}
-	log := NewLog(name, DEBUG)
-	logMap[name] = log
-	return log
-}
-
-func DeleteLog(name string) {
-	log := logMap[name]
-	if log != nil {
-		log.file.Close()
-		delete(logMap, name)
-	}
+func (this *Log) writeLog(format string, v ... interface {}) {
+	this.logger.SetPrefix(LevelStr[this.Level])
+	this.logger.Printf(format + "\n", v ...)
 }
