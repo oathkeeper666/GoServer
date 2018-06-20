@@ -2,8 +2,9 @@ package network
 
 import (
 	"net"
-	"fmt"
 	"strings"
+	// "config"
+	"logger"
 )
 
 var listener net.Listener
@@ -11,7 +12,7 @@ var listener net.Listener
 func GetHostAddr() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		fmt.Printf("get local host address error, err is %v\n.", err)
+		logger.WRITE_ERROR("get local host address error, err is %v\n.", err)
 		return ""
 	}
 
@@ -24,26 +25,28 @@ func GetHostAddr() string {
 	return ""
 }
 
-func StartListen() {
+func StartListen() bool {
 	ip := GetHostAddr()
 	port := "9000"
 
 	var err error
 	listener, err = net.Listen("tcp", strings.Join([]string { ip, port }, ":"))
 	if err != nil {
-		fmt.Printf("Listening error, error is %v\n", err)
-		return
+		logger.WRITE_ERROR("Listening error, error is %v\n", err)
+		return false;
 	}
 	
 	// start accept
 	go func() {
-		fmt.Println("begin to accepting ...") 
+		logger.WRITE_DEBUG("begin to accepting ...") 
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
-				fmt.Printf("accept error, error is %v\n", err)
+				logger.WRITE_WARNING("accept error, error is %v\n", err)
 			}
-			HandleConnection(NewClient(conn))
+			HandleConnection(conn)
 		}
 	}()
+
+	return true
 }

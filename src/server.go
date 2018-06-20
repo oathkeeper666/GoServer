@@ -63,6 +63,7 @@ func main() {
 	var isDaemon = flag.Bool("d", false, "daemon flag")
 	flag.Parse()
 
+	// daemon process
 	if *isDaemon {
 		if -1 == daemon() {
 			fmt.Printf("create daemon process failed.\n")
@@ -70,10 +71,16 @@ func main() {
 		}
 	}
 
-	network.StartListen()
 	// load server config
 	config.LoadServerConfig(*path)
 
+	// listen
+	if !network.StartListen() {
+		logger.WRITE_ERROR("listen for client failed.");
+		return
+	}
 	logger.WRITE_DEBUG("start server success!")
+
+	// wait to exit
 	waitForSignal()
 }

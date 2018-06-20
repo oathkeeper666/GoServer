@@ -2,66 +2,109 @@ package network
 
 import (
 	"net"
-	"bytes"
-	"fmt"
+	"time"
+	"sync"
+	"logger"
 )
 
-type TransHeader struct {
-	cmd uint8
-	other string
+const (
+	BUFSIZE = 1024
+	MAX_CONN_COUNT = 8000
+	TIME_OUT = 200				// 读写超时时间(ms)
+)
+
+/*
+	保存session
+*/
+var sessionMap map[string]*Session = make(map[string]*Session)
+var s_mutex *sync.Mutex = new(sync.Mutex)
+
+func AddSession(s *Session) {
+	s_mutex.Lock();
+	defer s_mutex.Unlock()
+	sessionMap[s.remoteIp] = s
 }
 
-var clientMap map[string]*Client
+func RemoveSession(ip string) {
+	s_mutex.Lock();
+	defer s_mutex.Unlock()
+	delete(sessionMap, ip)
+}
 
-type Client struct {
+type Session struct {
 	conn net.Conn
 	remoteIp string
-	readBuf *bytes.Buffer
-	writeBuf *bytes.Buffer
 }
 
-func NewClient(conn net.Conn) (*Client) {
-	if clientMap == nil {
-		clientMap = make(map[string]*Client)
+/*
+	发送数据给客户端
+*/
+func (this *Session) SendData(data []byte) {
+	_, err := this.conn.Write(data)
+	if err != nil {
+		logger.WRITE_WARNING("write to %s error: %v", this.remoteIp, err)
+		this.Close()
 	}
-	ip := conn.RemoteAddr().String()
-	clientMap[ip] = &Client {
+}
+
+/*
+	处理从客户端那里读取过来的数据
+*/
+func (this *Session) ProcessData(data []byte) {
+	
+}
+
+/*
+	设置处理协议的处理对象
+*/
+func (this *Session) SetHandler() {
+	
+}
+
+/*
+	关闭与客户端通信的session，执行清理操作
+*/
+func (this *Session) Close() {
+	this.conn.Close()
+	RemoveSession(this.remoteIp)
+}
+
+/*
+	创建一个与客户端通信的session
+*/
+func NewSession(conn net.Conn) (*Session) {
+	s := &Session {
 		conn: conn,
 		remoteIp: conn.RemoteAddr().String(),
-		readBuf: bytes.NewBuffer(make([]byte, 256)),
-		writeBuf: bytes.NewBuffer(make([]byte, 256)),
 	}
+	go readCircle(s)
 
-	return clientMap[ip]
+	return s
 }
 
-func readCircle(c *Client) {
+/*
+	持续不断从客户端读取数据
+*/
+func readCircle(s *Session) {
 	for {
-		b := make([]byte, 256)
-		_, err := c.conn.Read(b)
+		b := make([]byte, BUFSIZE)
+		_, err := s.conn.Read(b)
 		if err == nil {
-			c.readBuf.Write(b)	
+			// do something
+			logger.WRITE_DEBUG("read data from %s: %s", s.remoteIp, b)
+			s.ProcessData(b)
 		} else {
-			fmt.Printf("read from %s error, error is %v\n", c.remoteIp, err)
+			logger.WRITE_WARNING("read from %s error: %v", s.remoteIp, err)
+			s.Close()
+			break
 		}
 	}
 }
 
-func writeCircle(c *Client) {
-	for {
-		if c.writeBuf.Len() != 0 {
-			b := make([]byte, 256)
-			c.writeBuf.Read(b)
-			_, err := c.conn.Write(b)
-			if err != nil {
-				c.writeBuf.Write(b)
-				fmt.Printf("write to %s error, err is %v\n", c.remoteIp, err)
-			}
-		}
-	}
-}
-
-func HandleConnection(c *Client) {
-	go readCircle(c)
-	go writeCircle(c)
+/*
+	处理来自客户端的连接
+*/
+func HandleConnection(conn net.Conn) {
+	conn.SetDeadline(time.Now().Add(TIME_OUT * time.Microsecond));
+	AddSession(NewSession(conn))
 }
