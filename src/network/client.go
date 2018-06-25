@@ -5,6 +5,7 @@ import (
 	"time"
 	"sync"
 	"logger"
+	"servlet"
 )
 
 const (
@@ -34,6 +35,7 @@ func RemoveSession(ip string) {
 type Session struct {
 	conn net.Conn
 	remoteIp string
+	handler servlet.Servlet
 }
 
 /*
@@ -58,7 +60,9 @@ func (this *Session) ProcessData(data []byte) {
 	设置处理协议的处理对象
 */
 func (this *Session) SetHandler() {
-	
+	// this.handler = new(servlet.LoginSevlet) 
+	this.handler = servlet.NewLoginServlet()
+
 }
 
 /*
@@ -77,6 +81,7 @@ func NewSession(conn net.Conn) (*Session) {
 		conn: conn,
 		remoteIp: conn.RemoteAddr().String(),
 	}
+	s.SetHandler();
 	go readCircle(s)
 
 	return s
