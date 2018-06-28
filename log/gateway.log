@@ -1,5 +1,0 @@
-DEBUG 2018/06/28 16:27:57 logger.go:109: start server success!
-DEBUG 2018/06/28 16:27:57 logger.go:109: open database success.
-DEBUG 2018/06/28 16:35:48 logger.go:109: start server success!
-ERROR 2018/06/28 16:35:48 logger.go:109: wwwwww--->>
-DEBUG 2018/06/28 16:35:48 logger.go:109: open database success.
