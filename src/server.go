@@ -9,6 +9,7 @@ import (
 	"config"
 	"logger"
 	"flag"
+	"mysqldb"
 ) 
 
 func waitForSignal() {
@@ -20,6 +21,12 @@ func waitForSignal() {
 	signal.Notify(c, signals ...)
 	s := <-c
 	fmt.Printf("process exit, receive signal %v\n", s)
+	onExit()
+}
+
+// 进程退出时执行的清理操作
+func onExit() {
+	mysqldb.CloseDB()
 }
 
 func daemon() int {
@@ -74,12 +81,20 @@ func main() {
 	// load server config
 	config.LoadServerConfig(*path)
 
+	// new logger
+	logger.NewLog("gateway", logger.DEBUG, *isDaemon)
+
 	// listen
 	if !network.StartListen() {
 		logger.WRITE_ERROR("listen for client failed.");
 		return
 	}
 	logger.WRITE_DEBUG("start server success!")
+
+	// open database
+	if mysqldb.ConnectToDb() {
+		logger.WRITE_DEBUG("open database success.")
+	}
 
 	// wait to exit
 	waitForSignal()
