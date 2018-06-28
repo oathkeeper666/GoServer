@@ -2,6 +2,7 @@ package network
 
 import (
 	"net"
+	"time"
 	"strings"
 	// "config"
 	"logger"
@@ -49,4 +50,12 @@ func StartListen() bool {
 	}()
 
 	return true
+}
+
+/*
+	处理来自客户端的连接
+*/
+func HandleConnection(conn net.Conn) {
+	conn.SetDeadline(time.Now().Add(TIME_OUT * time.Microsecond));
+	AddSession(NewSession(conn))
 }
