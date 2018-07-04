@@ -6,9 +6,9 @@ import (
 	"logger"
 )
 
-var connector dbConnector
+var connector DBConnector
 
-type dbConnector struct {
+type DBConnector struct {
 	db *sql.DB
 }
 

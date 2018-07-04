@@ -72,7 +72,7 @@ func NewLog(name string, level uint8, daemon bool) {
 	var file *os.File
 	if daemon {
 		var err error
-		file, err = os.OpenFile(string("../log/" + name + ".log"), os.O_WRONLY | os.O_APPEND | os.O_CREATE, 0666)
+		file, err = os.OpenFile(string(name + ".log"), os.O_WRONLY | os.O_APPEND | os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Printf("open %s failed.\n", name)
 			return

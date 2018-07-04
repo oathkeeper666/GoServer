@@ -82,7 +82,7 @@ func main() {
 	config.LoadServerConfig(*path)
 
 	// new logger
-	logger.NewLog("gateway", logger.DEBUG, *isDaemon)
+	logger.NewLog(config.SrvConf.LogPath, logger.DEBUG, *isDaemon)
 
 	// listen
 	if !network.StartListen() {

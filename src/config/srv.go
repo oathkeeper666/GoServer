@@ -10,12 +10,16 @@ import (
 type ServerConfig struct {
 	ServerId string `json: "ServerId"`
 	LogPath string `json: "LogPath"`
+	ListenAddress string `json: "ListenAddress"`
 }
 
 var SrvConf *ServerConfig
 
 func LoadServerConfig(filePath string) {
 	SrvConf = FromJsonFile(filePath).(*ServerConfig)
+	if SrvConf == nil {
+		os.Exit(1)
+	}
 }
 
 func FromJsonStr(jsonStr []byte) (interface {}) {
