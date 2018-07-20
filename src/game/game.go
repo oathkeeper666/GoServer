@@ -2,9 +2,7 @@ package game
 
 import (
 	"fmt"
-	"syscall"
 	"os"
-	"os/signal"
 	"network"
 	"config"
 	"logger"

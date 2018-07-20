@@ -64,37 +64,3 @@ func StartListen(protocol string, address string) bool {
 
 	return true
 }
-
-/*
-	建立客户端协议处理链
-*/
-func buildClientServlet() servlet.Servlet {
-	login_servlet := servlet.NewLoginServlet()
-	return login_servlet
-}
-
-/*
-	建立内部服务器协议处理链
-*/
-func buildPeerServlet() servlet.Servlet {
-	return nil
-}
-
-func getServerServlet() servlet.Servlet {
-	if config.SrvConf.ServerId == "wb-game-server" {
-		return buildClientServlet()
-	} else {
-		return buildPeerServlet()
-	}
-}
-
-/*
-	处理来自客户端的连接
-*/
-func HandleConnection(conn net.Conn, servlet servlet.Servlet) {
-	conn.SetDeadline(time.Now().Add(TIME_OUT * time.Microsecond));
-	s := NewSession(conn)
-	s.SetHandler(servlet)
-	// save session
-	AddSession(s)
-}

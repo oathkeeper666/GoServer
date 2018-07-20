@@ -10,7 +10,9 @@ import (
 )
 
 const (
-	BUFSIZE = 1024
+	readMsgSize = 1024
+	writeMsgSize = 1024
+	sendChanSize = 256
 )
 
 /*
@@ -20,35 +22,33 @@ type Session struct {
 	conn net.Conn
 	remoteIp string
 	sid int64
-	pid int64
-	handler servlet.Servlet
+	send chan []byte
+	hub *Hub 	
 }
+
+var handler servlet.Servlet
 
 /*
 	发送数据给对端
 */
 func (this *Session) SendData(data []byte) {
-	_, err := this.conn.Write(data)
-	if err != nil {
-		logger.WRITE_WARNING("write to %s error: %v", this.remoteIp, err)
-		this.Close()
-	}
+	this.send <- data
 }
 
 /*
 	处理从客户端那里读取过来的数据
 */
 func (this *Session) ProcessData(num int32, data []byte) {
-	if this.handler != nil {
-		this.handler.HandleMsg(this.sid, num, data)
+	if handler != nil {
+		handler.HandleMsg(this.sid, num, data)
 	}
 }
 
 /*
 	设置处理协议的处理对象
 */
-func (this *Session) SetHandler(servlet servlet.Servlet) {
-	this.handler = servlet
+func SetHandler(servlet servlet.Servlet) {
+	handler = servlet
 }
 
 /*
@@ -63,7 +63,7 @@ func (this *Session) Close() {
 */
 func (s *Session) readCircle() {
 	for {
-		b := make([]byte, BUFSIZE)	// 网络字节序
+		b := make([]byte, readMsgSize)	// 网络字节序
 		_, err := s.conn.Read(b)
 		if err == nil {
 			logger.WRITE_DEBUG("read data from %s", s.remoteIp)
@@ -74,7 +74,7 @@ func (s *Session) readCircle() {
 				continue
 			}
 			// 网络字节序转化为本机字节序
-			c := make([]byte, BUFSIZE)
+			c := make([]byte, readMsgSize)
 			conv_err := convertToHost(b, c)
 			if conv_err != nil {
 				logger.WRITE_ERROR("convert network byte stream to local byte error: %v", conv_err)
@@ -84,11 +84,22 @@ func (s *Session) readCircle() {
 			s.ProcessData(num, c)
 		} else {
 			logger.WRITE_WARNING("read from %s error: %v", s.remoteIp, err)
-			s.Close()
-			RemoveSession(s)
+			s.hub.unregister <- s
 			break
 		}
 	}
+}
+
+func (s *Session) writeCircle() {
+	for (
+		message := <- s.send
+		_, err := this.conn.Write(data)
+		if err != nil {
+			logger.WRITE_WARNING("write data to peer error: %v", err)
+			s.hub.unregister <- s
+			break
+		}
+	)
 }
 
 /*
@@ -131,9 +142,11 @@ func NewSession(conn net.Conn) (*Session) {
 		conn: conn,
 		remoteIp: conn.RemoteAddr().String(),
 		sid: getSid(),
-		pid: 0,
+		send: make(chan []byte, sendChanSize),
+		hub: network.H,
 	}
 	go s.readCircle()
+	go s.writeCircle()
 
 	return s
 }

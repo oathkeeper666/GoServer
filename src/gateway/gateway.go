@@ -2,16 +2,20 @@ package gateway
 
 import (
 	"fmt"
-	"syscall"
 	"os"
-	"os/signal"
 	"network"
 	"config"
 	"logger"
 	"flag"
 	"mysqldb"
 	"util"
+	"gateway/servlet"
 ) 
+
+func buildMsgHandler() {
+	login_servlet := servlet.NewLoginServlet()
+	network.SetHandler(login_servlet)
+}
 
 func main() {
 	// parse cmd flag
@@ -38,13 +42,18 @@ func main() {
 		logger.WRITE_ERROR("listen for client failed.");
 		return
 	}
-	logger.WRITE_DEBUG("start server success!")
-
+	buildMsgHandler()
+	
 	// open database
 	if mysqldb.ConnectToDb() {
 		logger.WRITE_DEBUG("open database success.")
 	}
 
+	// main goroutine run
+	network.H.run()
+
 	// wait to exit
 	util.WaitForSignal()
+
+	logger.WRITE_DEBUG("start server success!")
 }
