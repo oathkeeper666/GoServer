@@ -1,5 +1,0 @@
-{
-	"ServerId": "wb-game-server",
-	"LogPath": "../log/gateway",
-	"ListenAddress": "127.0.0.1:9000"
-}

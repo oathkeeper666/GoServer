@@ -10,6 +10,7 @@ import (
 	"logger"
 	"flag"
 	"mysqldb"
+	"util"
 ) 
 
 func waitForSignal() {
@@ -66,7 +67,7 @@ func daemon() int {
 
 func main() {
 	// parse cmd flag
-	var path = flag.String("c", "../etc/server.json", "server config path")
+	var path = flag.String("c", "../etc/gateway.json", "server config path")
 	var isDaemon = flag.Bool("d", false, "daemon flag")
 	flag.Parse()
 
@@ -79,10 +80,10 @@ func main() {
 	}
 
 	// load server config
-	config.LoadServerConfig(*path)
+	config.LoadGatewayConfig(*path)
 
 	// new logger
-	logger.NewLog(config.SrvConf.LogPath, logger.DEBUG, *isDaemon)
+	logger.NewLog(config.GatewayConf.LogPath, logger.DEBUG, *isDaemon)
 
 	// listen
 	if !network.StartListen() {

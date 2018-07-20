@@ -1,0 +1,7 @@
+{
+	"ServerId": "wb-gateway-server",
+	"LogPath": "../log/gateway",
+	"ListenAddress": "127.0.0.1:9000",
+	"Protocol": "tcp",
+	"MinLevel": 0
+}

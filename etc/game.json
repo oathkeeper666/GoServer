@@ -1,0 +1,7 @@
+{
+	"ServerId": "wb-game-server",
+	"LogPath": "../log/game",
+	"ListenAddress": "127.0.0.1:9001",
+    "Protocol": "unix",
+    "MinLevel": 0
+}
