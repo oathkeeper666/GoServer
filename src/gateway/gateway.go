@@ -1,4 +1,4 @@
-package gateway
+package main
 
 import (
 	"fmt"
@@ -35,13 +35,15 @@ func main() {
 	config.LoadGatewayConfig(*path)
 
 	// new logger
-	logger.NewLog(config.GatewayConf.LogPath, config.GatewayConf.MinLevel, *isDaemon)
+	logger.NewLog(config.GatewayConf.LogPath, uint8(config.GatewayConf.MinLevel), *isDaemon)
 
 	// listen
 	if !network.StartListen(config.GatewayConf.Protocol, config.GatewayConf.ListenAddress) {
 		logger.WRITE_ERROR("listen for client failed.");
 		return
 	}
+
+	// handler msg
 	buildMsgHandler()
 	
 	// open database
@@ -49,11 +51,11 @@ func main() {
 		logger.WRITE_DEBUG("open database success.")
 	}
 
+	logger.WRITE_DEBUG("start server success!")
+
 	// main goroutine run
-	network.H.run()
+	network.H.Run()
 
 	// wait to exit
 	util.WaitForSignal()
-
-	logger.WRITE_DEBUG("start server success!")
 }

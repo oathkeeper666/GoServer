@@ -1,4 +1,4 @@
-package game
+package main
 
 import (
 	"fmt"
@@ -29,20 +29,27 @@ func main() {
 	config.LoadGameConfig(*path)
 
 	// new logger
-	logger.NewLog(config.GameConf.LogPath, config.GameConf.MinLevel, *isDaemon)
+	logger.NewLog(config.GameConf.LogPath, uint8(config.GameConf.MinLevel), *isDaemon)
 
 	// listen
 	if !network.StartListen(config.GameConf.Protocol, config.GameConf.ListenAddress) {
-		logger.WRITE_ERROR("listen for client failed.");
+		logger.WRITE_ERROR("listen for client failed.")
 		return
 	}
-	logger.WRITE_DEBUG("start server success!")
+
+	// handler msg
+	// todo
 
 	// open database
 	if mysqldb.ConnectToDb() {
 		logger.WRITE_DEBUG("open database success.")
 	}
 
+	logger.WRITE_DEBUG("start server success!")
+
 	// wait to exit
 	util.WaitForSignal()
+
+	// main goroutine run
+	network.H.Run()
 }

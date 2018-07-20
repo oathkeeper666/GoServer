@@ -2,19 +2,12 @@ package network
 
 import (
 	"net"
-	"time"
 	//"strings"
-	"config"
 	"logger"
-	"servlet"
-)
-
-const (
-	TIME_OUT = 100				// 读写超时时间(ms)
 )
 
 var listener net.Listener
-var ConnCh = make(chan net.Conn, 10)
+var connCh = make(chan net.Conn, 10)
 
 func GetHostAddr() string {
 	addrs, err := net.InterfaceAddrs()
@@ -58,7 +51,7 @@ func StartListen(protocol string, address string) bool {
 			if err != nil {
 				logger.WRITE_WARNING("accept error, error is %v\n", err)
 			}
-			ConnCh <- conn
+			H.register <- NewSession(conn)
 		}
 	}()
 

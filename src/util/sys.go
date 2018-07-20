@@ -5,6 +5,7 @@ import (
 	"mysqldb"
 	"os"
 	"os/signal"
+	"fmt"
 )
 
 

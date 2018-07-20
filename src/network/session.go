@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"bytes"
 	"sync"
+	//"time"
 )
 
 const (
@@ -90,16 +91,16 @@ func (s *Session) readCircle() {
 	}
 }
 
-func (s *Session) writeCircle() {
-	for (
-		message := <- s.send
-		_, err := this.conn.Write(data)
+func (this *Session) writeCircle() {
+	for {
+		message := <- this.send
+		_, err := this.conn.Write(message)
 		if err != nil {
 			logger.WRITE_WARNING("write data to peer error: %v", err)
-			s.hub.unregister <- s
+			this.hub.unregister <- this
 			break
 		}
-	)
+	}
 }
 
 /*
@@ -143,7 +144,7 @@ func NewSession(conn net.Conn) (*Session) {
 		remoteIp: conn.RemoteAddr().String(),
 		sid: getSid(),
 		send: make(chan []byte, sendChanSize),
-		hub: network.H,
+		hub: H,
 	}
 	go s.readCircle()
 	go s.writeCircle()

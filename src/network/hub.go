@@ -1,5 +1,9 @@
 package network
 
+import (
+	"logger"
+)
+
 type Hub struct {
 	// registered session
 	sess map[*Session]bool
@@ -15,14 +19,14 @@ var H = NewHub()
 
 func NewHub() *Hub {
 	return &Hub {
-		sess: make(map[*Session]bool)
-		broadcast: make(chan []byte),
-		register: make(chan *Session),
-		unregister: make(chan *Session),
+		sess: make(map[*Session]bool),
+		broadcast: make(chan []byte, 10),
+		register: make(chan *Session, 10),
+		unregister: make(chan *Session, 10),
 	}
 }
 
-func (h *Hub) run() {
+func (h *Hub) Run() {
 	for {
 		select {
 		case s := <-h.register:
@@ -31,7 +35,7 @@ func (h *Hub) run() {
 			s.Close()
 			delete(h.sess, s)
 		case message := <-h.broadcast:
-
+			logger.WRITE_DEBUG(string(message))
 		}
 	}
 }

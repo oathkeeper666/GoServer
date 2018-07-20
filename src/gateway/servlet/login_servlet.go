@@ -2,12 +2,13 @@ package servlet
 
 import (
 	// "logger"
+	"servlet"
 )
 
 type LoginSevlet struct {
 	cmd int32
 	cmd2 int32
-	successor Servlet
+	successor servlet.Servlet
 }
 
 func (this *LoginSevlet) HandleMsg(sid int64, cmd int32, buffer []byte) {
@@ -20,7 +21,7 @@ func (this *LoginSevlet) HandleMsg(sid int64, cmd int32, buffer []byte) {
 	}
 }
 
-func (this *LoginSevlet) SetSuccessor(successor Servlet) {
+func (this *LoginSevlet) SetSuccessor(successor servlet.Servlet) {
 	this.successor = successor
 }
 

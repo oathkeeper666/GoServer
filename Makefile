@@ -1,4 +1,4 @@
-all: gateway game 
+all: gateway game
 
 CLIENT_PROTO=$(wildcard ./protoc/*.proto)
 
@@ -6,12 +6,12 @@ proto:
 	protoc --go_out=./src/proto/ -I=./protoc/ $(CLIENT_PROTO)
 
 gateway: proto
-	go install src/gateway
+	go install gateway
 
 game: proto
-	go install src/game
+	go install game
 
-.PHONY: clean
+.PHONY: clean gateway game
 
 clean:
-	rm ./protoc/*.go
+	rm ./src/proto/*.go
