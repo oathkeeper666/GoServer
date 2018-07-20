@@ -14,6 +14,7 @@ const (
 )
 
 var listener net.Listener
+var ConnCh = make(chan net.Conn, 10)
 
 func GetHostAddr() string {
 	addrs, err := net.InterfaceAddrs()
@@ -31,7 +32,7 @@ func GetHostAddr() string {
 	return ""
 }
 
-func StartListen() bool {
+func StartListen(protocol string, address string) bool {
 	/*ip := GetHostAddr()
 	port := "9000"
 
@@ -43,7 +44,7 @@ func StartListen() bool {
 	}*/
 
 	var err error	
-	listener, err = net.Listen("tcp", config.SrvConf.ListenAddress)
+	listener, err = net.Listen(protocol, address)
 	if err != nil {
 		logger.WRITE_ERROR("Listening error, error is %v\n", err)
 		return false;
@@ -57,7 +58,7 @@ func StartListen() bool {
 			if err != nil {
 				logger.WRITE_WARNING("accept error, error is %v\n", err)
 			}
-			HandleConnection(conn, getServerServlet())
+			ConnCh <- conn
 		}
 	}()
 

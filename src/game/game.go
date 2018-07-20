@@ -1,4 +1,4 @@
-package gateway
+package game
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 
 func main() {
 	// parse cmd flag
-	var path = flag.String("c", "../etc/gateway.json", "server config path")
+	var path = flag.String("c", "../etc/game.json", "server config path")
 	var isDaemon = flag.Bool("d", false, "daemon flag")
 	flag.Parse()
 
@@ -28,13 +28,13 @@ func main() {
 	}
 
 	// load server config
-	config.LoadGatewayConfig(*path)
+	config.LoadGameConfig(*path)
 
 	// new logger
-	logger.NewLog(config.GatewayConf.LogPath, config.GatewayConf.MinLevel, *isDaemon)
+	logger.NewLog(config.GameConf.LogPath, config.GameConf.MinLevel, *isDaemon)
 
 	// listen
-	if !network.StartListen(config.GatewayConf.Protocol, config.GatewayConf.ListenAddress) {
+	if !network.StartListen(config.GameConf.Protocol, config.GameConf.ListenAddress) {
 		logger.WRITE_ERROR("listen for client failed.");
 		return
 	}

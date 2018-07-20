@@ -12,6 +12,7 @@ type GatewayConfig struct {
 	LogPath string `json: "LogPath"`
 	ListenAddress string `json: "ListenAddress"`
 	Protocol string `json: "Protocol"`
+	MinLevel int32 `json: "MinLevel"`
 }
 
 type GameConfig struct {
@@ -19,6 +20,7 @@ type GameConfig struct {
 	LogPath string `json: "LogPath"`
 	ListenAddress string `json: "ListenAddress"`
 	Protocol string `json: "Protocol"`
+	MinLevel int32 `json: "MinLevel"`
 }
 
 var GatewayConf GatewayConfig
