@@ -1,6 +1,6 @@
 package servlet
 
 type Servlet interface {
-	HandleMsg(sid int64, cmd int32, buffer []byte)
+	HandleMsg(cmd int32, buffer []byte) ([]byte)
 	SetSuccessor(successor Servlet)
 }

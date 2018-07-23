@@ -7,14 +7,23 @@ import (
 	"encoding/binary"
 	"bytes"
 	"sync"
-	//"time"
+	"consts"
+	"time"
 )
 
-const (
-	readMsgSize = 1024
-	writeMsgSize = 1024
-	sendChanSize = 256
-)
+type Package struct {
+	sid int64
+	cmd int32
+	data []byte
+}
+
+func NewPackage() *Package {
+	return &Package {
+		sid: 0,
+		cmd: 0,
+		data: nil,
+	}
+}
 
 /*
 	服务器与对端进行通信的结构
@@ -23,25 +32,38 @@ type Session struct {
 	conn net.Conn
 	remoteIp string
 	sid int64
-	send chan []byte
+	lastHeartBeateTime time.Time
+	heartBeateDuration time.Duration
 	hub *Hub 	
 }
 
+// session处理协议的Handler
 var handler servlet.Servlet
-
-/*
-	发送数据给对端
-*/
-func (this *Session) SendData(data []byte) {
-	this.send <- data
-}
 
 /*
 	处理从客户端那里读取过来的数据
 */
-func (this *Session) ProcessData(num int32, data []byte) {
+func (this *Session) ProcessData(pack *Package) {
 	if handler != nil {
-		handler.HandleMsg(this.sid, num, data)
+
+		ret_msg := handler.HandleMsg(pack.cmd, pack.data)
+		this.SendToPeer(ret_msg)
+
+	}
+}
+
+/*
+	给对端发送数据
+*/
+func (this *Session) SendToPeer(msg []byte) {
+	if len(msg) > consts.SESSION_WRITE_MSG_SIZE {
+		logger.WRITE_WARNING("send data to peer failed, msg size too big.")
+		return
+	}
+	_, err := this.conn.Write(msg)
+	if err != nil {
+		logger.WRITE_WARNING("write data to peer error: %v", err)
+		this.hub.unregister <- this
 	}
 }
 
@@ -64,7 +86,7 @@ func (this *Session) Close() {
 */
 func (s *Session) readCircle() {
 	for {
-		b := make([]byte, readMsgSize)	// 网络字节序
+		b := make([]byte, consts.SESSION_READ_MSG_SIZE)	// 网络字节序
 		_, err := s.conn.Read(b)
 		if err == nil {
 			logger.WRITE_DEBUG("read data from %s", s.remoteIp)
@@ -75,29 +97,22 @@ func (s *Session) readCircle() {
 				continue
 			}
 			// 网络字节序转化为本机字节序
-			c := make([]byte, readMsgSize)
+			c := make([]byte, consts.SESSION_READ_MSG_SIZE)
 			conv_err := convertToHost(b, c)
 			if conv_err != nil {
 				logger.WRITE_ERROR("convert network byte stream to local byte error: %v", conv_err)
 				continue
 			}
-			// 处理协议
-			s.ProcessData(num, c)
+
+			// 缓存协议
+			pack := NewPackage()
+			pack.sid = s.sid
+			pack.cmd = num
+			pack.data = c
+			s.hub.receiveMsgQueue <- pack
 		} else {
 			logger.WRITE_WARNING("read from %s error: %v", s.remoteIp, err)
 			s.hub.unregister <- s
-			break
-		}
-	}
-}
-
-func (this *Session) writeCircle() {
-	for {
-		message := <- this.send
-		_, err := this.conn.Write(message)
-		if err != nil {
-			logger.WRITE_WARNING("write data to peer error: %v", err)
-			this.hub.unregister <- this
 			break
 		}
 	}
@@ -121,7 +136,6 @@ func convertToHost(b []byte, c []byte) error {
 	return binary.Read(reader, binary.BigEndian, c)
 }
 
-
 /*
 	获得一个sid
 */
@@ -143,11 +157,11 @@ func NewSession(conn net.Conn) (*Session) {
 		conn: conn,
 		remoteIp: conn.RemoteAddr().String(),
 		sid: getSid(),
-		send: make(chan []byte, sendChanSize),
+		lastHeartBeateTime: time.Now(),
+		heartBeateDuration: consts.SESSION_HEART_BEATE_INTERVAL * time.Second,
 		hub: H,
 	}
 	go s.readCircle()
-	go s.writeCircle()
 
 	return s
 }

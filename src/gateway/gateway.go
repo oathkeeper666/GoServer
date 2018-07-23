@@ -12,6 +12,9 @@ import (
 	"gateway/servlet"
 ) 
 
+/*
+	建立处理协议的职责链
+*/
 func buildMsgHandler() {
 	login_servlet := servlet.NewLoginServlet()
 	network.SetHandler(login_servlet)
@@ -55,6 +58,10 @@ func main() {
 
 	// main goroutine run
 	network.H.Run()
+
+	// connect to backend
+	gate := NewGateService()
+	gate.ConnectBackend()
 
 	// wait to exit
 	util.WaitForSignal()

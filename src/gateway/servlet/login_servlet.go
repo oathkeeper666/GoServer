@@ -11,14 +11,15 @@ type LoginSevlet struct {
 	successor servlet.Servlet
 }
 
-func (this *LoginSevlet) HandleMsg(sid int64, cmd int32, buffer []byte) {
+func (this *LoginSevlet) HandleMsg(cmd int32, buffer []byte) ([]byte) {
 	if this.cmd >= cmd && this.cmd2 < cmd {
-
-	} else {
-		if this.successor != nil {
-			this.successor.HandleMsg(sid, cmd, buffer)
-		}
+		return nil
 	}
+	if this.successor != nil {
+		return this.successor.HandleMsg(cmd, buffer)
+	}
+
+	return nil
 }
 
 func (this *LoginSevlet) SetSuccessor(successor servlet.Servlet) {
