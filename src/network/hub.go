@@ -8,7 +8,7 @@ import (
 
 type Hub struct {
 	// registered session
-	sess map[int64]*Session
+	sess map[string]*Session
 	// broadcast message
 	broadcast chan []byte
 	// register
@@ -25,7 +25,7 @@ var H = NewHub()
 
 func NewHub() *Hub {
 	return &Hub {
-		sess: make(map[int64]*Session),
+		sess: make(map[string]*Session),
 		broadcast: make(chan []byte, consts.HUB_BROADCAST_QUEUE_SIZE),
 		register: make(chan *Session, consts.HUB_ACCEPT_SIZE),
 		unregister: make(chan *Session, consts.HUB_UNACCEPT_SIZE),
@@ -39,7 +39,20 @@ func NewHub() *Hub {
 */
 func (h *Hub) flushPendingPackets() {
 	for pack := range h.receiveMsgQueue {
-		h.sess[pack.sid].ProcessData(pack)
+		if h.sess[pack.sid] != nil {
+			h.sess[pack.sid].ProcessData(pack)
+		}
+	}
+}
+
+func (h *Hub) checkHeatbeats() {
+	now := time.Now()
+	for _, s := range h.sess {
+		if s.lastHeartBeateTime.Add(s.heartBeateDuration).Before(now) {
+			logger.WRITE_WARNING("%s connection timeout ...", s)
+			s.Close()
+			delete(h.sess, s.sid)
+		} 
 	}
 }
 
@@ -54,6 +67,7 @@ func (h *Hub) Run() {
 		case message := <-h.broadcast:
 			logger.WRITE_DEBUG(string(message))
 		case <-h.ticker:
+			h.checkHeatbeats()
 			h.flushPendingPackets()
 		}
 	}

@@ -25,6 +25,9 @@ func GetHostAddr() string {
 	return ""
 }
 
+/*
+	监听普通的socket
+*/
 func StartListen(protocol string, address string) bool {
 	/*ip := GetHostAddr()
 	port := "9000"

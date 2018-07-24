@@ -6,20 +6,21 @@ import (
 	"servlet"
 	"encoding/binary"
 	"bytes"
-	"sync"
 	"consts"
 	"time"
+	"fmt"
+	"util"
 )
 
 type Package struct {
-	sid int64
+	sid string
 	cmd int32
 	data []byte
 }
 
 func NewPackage() *Package {
 	return &Package {
-		sid: 0,
+		sid: "",
 		cmd: 0,
 		data: nil,
 	}
@@ -31,7 +32,7 @@ func NewPackage() *Package {
 type Session struct {
 	conn net.Conn
 	remoteIp string
-	sid int64
+	sid string
 	lastHeartBeateTime time.Time
 	heartBeateDuration time.Duration
 	hub *Hub 	
@@ -44,11 +45,12 @@ var handler servlet.Servlet
 	处理从客户端那里读取过来的数据
 */
 func (this *Session) ProcessData(pack *Package) {
+	this.lastHeartBeateTime = time.Now()
 	if handler != nil {
-
+		op := util.StartOperation("ProcessData")
 		ret_msg := handler.HandleMsg(pack.cmd, pack.data)
 		this.SendToPeer(ret_msg)
-
+		op.Finish(time.Millisecond * 100)
 	}
 }
 
@@ -118,6 +120,10 @@ func (s *Session) readCircle() {
 	}
 }
 
+func (s *Session) String() string {
+	return fmt.Sprintf("%d@%s", s.sid, s.conn.RemoteAddr())
+}
+
 /*
 	将byte转化为int
 */
@@ -137,28 +143,15 @@ func convertToHost(b []byte, c []byte) error {
 }
 
 /*
-	获得一个sid
-*/
-var g_sid int64 = 0
-var sid_mutex *sync.Mutex = new(sync.Mutex)
-func getSid() int64 {
-	sid_mutex.Lock()
-	defer sid_mutex.Unlock()
-	g_sid = g_sid + 1
-	return g_sid
-}
-
-/*
 	创建一个与客户端通信的session
 */
-
 func NewSession(conn net.Conn) (*Session) {
 	s := &Session {
 		conn: conn,
 		remoteIp: conn.RemoteAddr().String(),
-		sid: getSid(),
+		sid: util.GenUUID(),
 		lastHeartBeateTime: time.Now(),
-		heartBeateDuration: consts.SESSION_HEART_BEATE_INTERVAL * time.Second,
+		heartBeateDuration: consts.SESSION_HEART_BEATE_INTERVAL,
 		hub: H,
 	}
 	go s.readCircle()
